@@ -1,3 +1,4 @@
+// app.js
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -17,9 +18,18 @@ mongoose.connect(process.env.MONGODB_URI, {
 .then(() => console.log('MongoDB Connected'))
 .catch((err) => console.log(err));
 
-// 基础路由测试
+// 导入并使用认证路由
+const authRoutes = require('./src/routes/auth');
+app.use('/api/auth', authRoutes);
+
+// 测试根路由
 app.get('/', (req, res) => {
   res.send('xyblog Admin API Running');
+});
+
+// 测试用路由
+app.get('/api/auth/test', (req, res) => {
+  res.send('Test route working');
 });
 
 app.listen(PORT, () => {
