@@ -35,3 +35,8 @@ app.get('/api/auth/test', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+const auth = require('./src/middlewares/auth');
+app.get('/api/protected', auth, (req, res) => {
+    res.json({ message: '这是一个受保护的资源，只有登录用户可以访问', user: req.user });
+});
