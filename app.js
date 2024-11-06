@@ -43,3 +43,10 @@ app.get('/api/protected', auth, (req, res) => {
 
 const postRoutes = require('./src/routes/post');
 app.use('/api/posts', postRoutes);
+
+
+const categoryRoutes = require('./src/routes/category');
+const tagRoutes = require('./src/routes/tag');
+
+app.use('/api/categories', categoryRoutes);
+app.use('/api/tags', tagRoutes);
