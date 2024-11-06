@@ -20,4 +20,25 @@ router.post('/create', auth, async (req, res) => {
     }
 });
 
+// 获取所有文章
+router.get('/', async (req, res) => {
+    try {
+        const posts = await Post.find().populate('author', 'username');
+        res.json(posts);
+    } catch (error) {
+        res.status(500).json({ message: '获取文章失败', error });
+    }
+});
+
+// 获取单篇文章
+router.get('/:id', async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id).populate('author', 'username');
+        if (!post) return res.status(404).json({ message: '文章未找到' });
+        res.json(post);
+    } catch (error) {
+        res.status(500).json({ message: '获取文章失败', error });
+    }
+});
+
 module.exports = router;
