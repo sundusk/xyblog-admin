@@ -41,4 +41,34 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// 更新文章
+router.put('/:id', auth, async (req, res) => {
+    const { title, content } = req.body;
+
+    try {
+        // 查找并更新文章，确保只有作者可以更新
+        const post = await Post.findOneAndUpdate(
+            { _id: req.params.id, author: req.user.userId },
+            { title, content },
+            { new: true }
+        );
+        if (!post) return res.status(404).json({ message: '文章未找到或无权限更新' });
+        res.json({ message: '文章更新成功', post });
+    } catch (error) {
+        res.status(500).json({ message: '更新文章失败', error });
+    }
+});
+
+// 删除文章
+router.delete('/:id', auth, async (req, res) => {
+    try {
+        // 查找并删除文章，确保只有作者可以删除
+        const post = await Post.findOneAndDelete({ _id: req.params.id, author: req.user.userId });
+        if (!post) return res.status(404).json({ message: '文章未找到或无权限删除' });
+        res.json({ message: '文章删除成功' });
+    } catch (error) {
+        res.status(500).json({ message: '删除文章失败', error });
+    }
+});
+
 module.exports = router;
