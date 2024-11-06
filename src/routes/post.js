@@ -2,21 +2,33 @@
 const express = require('express');
 const auth = require('../middlewares/auth'); // 引入身份验证中间件
 const Post = require('../models/Post'); // 引入文章模型
+const Category = require('../models/Category');
+const Tag = require('../models/Tag');
 
 const router = express.Router();
 
 // 创建文章接口
+// 创建文章接口的错误处理
+// src/routes/post.js
 router.post('/create', auth, async (req, res) => {
-    const { title, content } = req.body;
-    const author = req.user.userId; // 从身份验证中间件获取用户ID
+    const { title, content, category, tags } = req.body;
+    const author = req.user.userId;
 
     try {
-        // 创建新的文章
-        const post = new Post({ title, content, author });
-        await post.save(); // 保存到数据库
+        // 验证分类和标签是否存在
+        if (category && !(await Category.findById(category))) {
+            return res.status(400).json({ message: '分类不存在' });
+        }
+        if (tags && (await Tag.find({ _id: { $in: tags } }).countDocuments()) !== tags.length) {
+            return res.status(400).json({ message: '部分标签不存在' });
+        }
+
+        const post = new Post({ title, content, author, category, tags });
+        await post.save();
         res.status(201).json({ message: '文章创建成功', post });
     } catch (error) {
-        res.status(500).json({ message: '文章创建失败', error });
+        console.error('创建文章时发生错误:', error);
+        res.status(500).json({ message: '文章创建失败', error: error.message });
     }
 });
 
@@ -42,20 +54,29 @@ router.get('/:id', async (req, res) => {
 });
 
 // 更新文章
+// 更新文章
 router.put('/:id', auth, async (req, res) => {
-    const { title, content } = req.body;
+    const { title, content, category, tags } = req.body;
 
     try {
-        // 查找并更新文章，确保只有作者可以更新
+        // 验证分类和标签是否存在
+        if (category && !(await Category.findById(category))) {
+            return res.status(400).json({ message: '分类不存在' });
+        }
+        if (tags && (await Tag.find({ _id: { $in: tags } }).countDocuments()) !== tags.length) {
+            return res.status(400).json({ message: '部分标签不存在' });
+        }
+
         const post = await Post.findOneAndUpdate(
             { _id: req.params.id, author: req.user.userId },
-            { title, content },
+            { title, content, category, tags },
             { new: true }
         );
         if (!post) return res.status(404).json({ message: '文章未找到或无权限更新' });
         res.json({ message: '文章更新成功', post });
     } catch (error) {
-        res.status(500).json({ message: '更新文章失败', error });
+        console.error('更新文章时发生错误:', error);
+        res.status(500).json({ message: '更新文章失败', error: error.message });
     }
 });
 
