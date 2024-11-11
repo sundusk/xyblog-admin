@@ -8,6 +8,7 @@ const postSchema = new mongoose.Schema({
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // 作者引用
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },  // 关联分类
     tags: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }],         // 关联标签数组
+    status: { type: String, enum: ['draft', 'published'], default: 'draft' }, // 新增状态字段，默认值为 'draft'
     createdAt: { type: Date, default: Date.now }   // 创建时间
 });
 
